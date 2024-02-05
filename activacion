@@ -1,0 +1,9 @@
+nano /etc/sysctl.conf
+
+y tenemos que descomentar la siguiente linea:
+# Uncomment the next line to enable packet forwarding for IPv4
+net.ipv4.ip_forward=1
+
+sudo sysctl -p /etc/sysctl.conf
+
+iptables -t nat -A POSTROUTING -o (interfaz en dhcp) -j MASQUERADE
