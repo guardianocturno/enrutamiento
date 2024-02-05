@@ -1,0 +1,26 @@
+# Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    ens19:
+      dhcp4: true
+    ens18:
+      addresses: [193.168.3.220/24]
+      nameservers:
+       addresses: [1.1.1.1, 8.8.8.8]
+
+#CLIENTE
+# Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    ens18:
+      dhcp4: false
+      addresses: [193.168.3.1/24]
+      routes:
+       - to: default
+         via: 193.168.3.220
+      nameservers:
+        addresses: [1.1.1.1, 8.8.8.8]
