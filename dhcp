@@ -1,22 +1,22 @@
-1.- Instalación
+# 1.- Instalación
 sudo apt-get update
 sudo apt-get install isc-dhpc-server
 
-2.- configuracion
-group SMR {
-subnet 193.168.9.0 netmask 255.255.255.0 {
-  range 193.168.9.100 193.168.9.200;
-  option domain-name-servers 8.8.8.8;
-  option domain-name "micentro.edu";
-  option subnet-mask 255.255.255.0;
-  option routers 193.168.9.220;
-  option broadcast-address 193.168.9.255;
-}
-}
+# 2.- configuracion
+#group SMR {
+#subnet 193.168.9.0 netmask 255.255.255.0 {
+#  range 193.168.9.100 193.168.9.200;
+#  option domain-name-servers 8.8.8.8;
+#  option domain-name "micentro.edu";
+#  option subnet-mask 255.255.255.0;
+#  option routers 193.168.9.220;
+#  option broadcast-address 193.168.9.255;
+#}
+#}
 
-3.- cargar fichero
+# 3.- cargar fichero
 sudo dhcpd -t -cf /etc/dhcp/dhcpd.conf
 
-4.- poner la tarjeta
+# 4.- poner la tarjeta
 sudo nano /etc/default/isc-dhcp-server
-el nombre de tu dispositivo de red en ipv4
+# el nombre de tu dispositivo de red en ipv4
