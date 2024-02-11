@@ -1,0 +1,222 @@
+COMANDOS VARIOS
+- sudo apt-get update
+- sudo apt-get upgrade
+- sudo apt-get autoremove
+- sudo apt-get autoclean
+- sudo apt-get install top (controlador del sistema)
+- sudo kill numero_pid
+- sudo xkill (para borrar de manera gráfica)
+- sudo apt-get install htop (controlador del sistema)
+- who (comando para saber qué usuarios hay conectados)
+- Ctrl + Alt + 1-7 (para cambiar entre terminales)
+- adduser, addgroup, deluser, delgroup, usermod
+
+ENRUTAMIENTO
+Comando 1: sudo nano /etc/netplan/01-network-manager-all.yaml
+Estructura en el servidor:
+
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+   ens18:
+    dhcp4: true
+   ens19:
+    addresses: [193.168.3.220/24]
+    nameservers:
+     addresses: [1.1.1.1, 8.8.8.8]
+
+Estructura en el cliente:
+
+network:
+ version: 2
+ renderer: networkd
+ ethernets:
+  ens18:
+   dhcp4: false
+   addresses: [193.168.3.3/24]
+   routes:
+    - to: default
+      via: 193.168.3.220
+   nameservers:
+     addresses: [1.1.1.1, 8.8.8.8]
+
+- sudo apt-get update; sudo apt-get upgrade -y
+- mkdir /home/usuario/scritps
+- nano enruta.sh:
+	#!/bin/bash
+	echo “1” > /proc/sys/net/ipv4/ip_forward
+	iptables -t nat -A POSTROUTING -s 193.168.3.0/24 -o ens18 -j MASQUERADE
+	iptables -A FORWARD -j ACCEPT
+- bash enruta.sh
+- ping 8.8.8.8 (en el cliente, debe funcionar)
+- sudo apt-get update; sudo apt-get upgrade -y
+- sudo apt-get update; sudo apt-get install iptables-persistent (en el servidor)
+- mkdir /home/usuario/services
+- nano enruta.service:
+
+	#!/bin/bash
+[Unit]
+Description=Script service
+After=network.target network-online.target
+Wants=network-online.target
+	
+[Service]
+ExecStart=/home/usuario/scripts/enruta.sh
+	
+[Install]
+WantedBy=multi-user.target
+- sudo systemctl enable /home/usuario/services/enruta.service
+- sudo systemctl start enruta.service 
+- sudo systemctl status enruta.service (debe salir loaded)
+
+DHCP
+
+- sudo apt-get update; sudo apt-get install isc-dhcp-server (en el servidor)
+- sudo nano etc/dhcp/dhcpd.conf (introducir al final del archivo):
+
+	group SMR {
+	subnet 193.168.4.0 netmask 255.255.255.0 {
+	range 193.168.4.100 193.168.4.200;
+	option domain-name-servers 193.168.4.220;
+	option domain-name “micentro.edu”;
+	option subnet-mask 255.255.255.0;
+	option routers 193.168.4.220;
+	option broadcast-address 193.168.4.255;
+	}
+	}
+
+- sudo dhcpd -t -cf /etc/dhcp/dhcpd.conf
+- sudo nano /etc/default/isc-dhcp-server (añadir en el archivo):
+
+	INTERFACESv4=”ens19”
+
+- sudo nano /etc/netplan/01-network-manager-all.yaml:
+	network:
+ version: 2
+ renderer: networkd
+ ethernets:
+  ens18:
+   dhcp4: true
+   #addresses: [193.168.4.3/24]
+   #routes:
+    #- to: default
+     # via: 193.168.4.220
+   #nameservers:
+    # addresses: [1.1.1.1, 8.8.8.8]
+DNS
+sudo apt update; sudo apt-get install bind9 bind9-utils
+sudo ufw allow bind9
+sudo nano /etc/bind/named.conf.options
+	listen-on { any; };
+	allow-query { localhost; 193.168.4.0/24; };
+	forwarders {
+		8.8.8.8;
+	};
+	…
+	dnssec-validation no;
+	#listen..
+sudo nano /etc/default/named
+		añadir -4
+sudo named-checkconf
+sudo nano /etc/bind/named.conf.local
+	zone “micentro.edu” IN {
+		type master;
+		file “/etc/bind/zonas/db.micentro.edu”;
+	};
+
+	zone “4.168.193.in-addr.arpa” {
+		type master;
+		file “/etc/bind/zonas/db.4.168.193”;
+	};
+mkdir /etc/bind/zonas
+cp /etc/bind/db.local /etc/bind/zonas/db.micentro.edu
+sudo nano /etc/bind/zonas/db.micentro.edu (y lo modificamos)
+cp /etc/bind/zonas/db.micentro.edu /etc/bind/zonas/db.4.168.193
+sudo nano /etc/bind/zonas/db.micentro.edu
+sudo named-checkconf /etc/bind/named.conf.local
+sudo named-checkzone micentro.edu /etc/bind/zonas/db.micentro.edu
+sudo named-checkzone 4.168.193.in-addr.arpa /etc/bind/zonas/db.4.168.193
+sudo service bind9 restart
+ping servidor.micentro.edu desde el cliente
+
+DNS-DHCP DINÁMICO
+ddns-confgen -k DDNS_UPDATE
+sudo nano ddns.key (y pegamos la key)
+cp ddns.key /etc/bind
+cp ddns.key /etc/dhcp
+chown root:bind /etc/bind/ddns.key
+chown root:root /etc/dhcp/ddns.key
+chmod 640 /etc/bind/ddns.key
+chmod 640 /etc/dhcp/ddns.key
+sudo nano /etc/bind/named.conf.local
+	include “/etc/bind/ddns.key”;
+	zone “micentro.edu”{
+		type master;
+		notify no;
+		file “/var/cache/bind/db.micentro.edu”;
+		allow-update { key DDNS_UPDATE; };
+	};
+	
+	zone “4.168.193.in-addr.arpa”{
+		type master;
+		notify no;
+		file “/etc/cache/bind/db.4.168.193”
+		allow-update { key DDNS_UPDATE”; };
+	};
+	
+mkdir /etc/bind/zonas
+cp /etc/bind/db.empy /etc/bind/zonas/db.micentro.edu
+cp /etc/bind/db.empy /etc/bind/zonas/db.4.168.193
+sudo nano /etc/bind/zonas/db.micentro.edu (y lo editamos)
+sudo nano /etc/bind/zonas/db.4.168.193 (y lo editamos)
+sudo named-checkzone micentro.edu /etc/bind/zonas/db.micentro.edu
+sudo named-checkzone 4.168.193.in-addr.arpa /etc/bind/zonas/db.4.168.193
+cd /var/cache/bind
+ln -s /etc/bind/zonas/db.micentro.edu
+ln -s /etc/bind/zonas/db.4.168.193
+sudo nano /etc/dhcp/dhcpd-conf
+	option domain-name “micentro.edu”
+	option domain-name-servers 193.168.4.220;
+	
+	default-lease-time 600;
+	max-lease-time 7200;
+	
+	ddns-update-style interim;
+	ignore client-updates;
+	update-static-leases on;
+	ddns-domainname “micentro.edu.”;
+	ddns-domainname “4.168.193.in-addr.arpa”;
+	
+	authoritative;
+	
+	log-faciality local7;
+	
+	include “/etc/dhcp/ddns.key”;
+	
+	zone micentro.edu {
+		primary 127.0.0.1;
+		key DDNS_UPDATE;
+	}
+
+	zone 4.168.193.in-addr.arpa {
+		primary 127.0.0.1;
+		key DDNS_UPDATE;
+	}
+	
+	subnet 193.168.4.0 netmask 255.255.255.0{
+		range 193.168.4.50 193.168.4.60;
+		option routers 193.168.4.220;
+	}
+dhcpd -t
+sudo nano /etc/default/isc-dhcp-server
+sudo service bind9 restart
+sudo service isc-dhcpd-server restart
+
+SSH Y TAR
+sudo apt-get update; sudo apt-get install ssh -y
+ssh-keygen -t rsa (desde el cliente)
+ssh-copy-id -i ~/.ssh/id_rsa.pub usuario@192.168.4.220
+
+Empaquetar
+tar cvf archivo.tar /archivo/mayo/*
