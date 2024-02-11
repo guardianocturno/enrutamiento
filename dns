@@ -1,0 +1,34 @@
+sudo apt update; sudo apt-get install bind9 bind9-utils
+sudo ufw allow bind9
+sudo nano /etc/bind/named.conf.options
+	listen-on { any; };
+	allow-query { localhost; 193.168.4.0/24; };
+	forwarders {
+		8.8.8.8;
+	};
+	…
+	dnssec-validation no;
+	#listen..
+sudo nano /etc/default/named
+		añadir -4
+sudo named-checkconf
+sudo nano /etc/bind/named.conf.local
+	zone “micentro.edu” IN {
+		type master;
+		file “/etc/bind/zonas/db.micentro.edu”;
+	};
+
+	zone “4.168.193.in-addr.arpa” {
+		type master;
+		file “/etc/bind/zonas/db.4.168.193”;
+	};
+mkdir /etc/bind/zonas
+cp /etc/bind/db.local /etc/bind/zonas/db.micentro.edu
+sudo nano /etc/bind/zonas/db.micentro.edu (y lo modificamos)
+cp /etc/bind/zonas/db.micentro.edu /etc/bind/zonas/db.4.168.193
+sudo nano /etc/bind/zonas/db.micentro.edu
+sudo named-checkconf /etc/bind/named.conf.local
+sudo named-checkzone micentro.edu /etc/bind/zonas/db.micentro.edu
+sudo named-checkzone 4.168.193.in-addr.arpa /etc/bind/zonas/db.4.168.193
+sudo service bind9 restart
+ping servidor.micentro.edu desde el cliente
