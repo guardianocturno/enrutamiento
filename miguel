@@ -42,7 +42,7 @@ network:
      addresses: [1.1.1.1, 8.8.8.8]
 
 - sudo apt-get update; sudo apt-get upgrade -y
-- mkdir /home/usuario/scritps
+- mkdir /home/usuario/scripts
 - nano enruta.sh:
 	#!/bin/bash
 	echo “1” > /proc/sys/net/ipv4/ip_forward
