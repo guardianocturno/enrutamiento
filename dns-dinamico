@@ -1,0 +1,34 @@
+ddns-confgen -k DDNS_UPDATE
+sudo nano ddns.key (y pegamos la key)
+cp ddns.key /etc/bind
+cp ddns.key /etc/dhcp
+chown root:bind /etc/bind/ddns.key
+chown root:root /etc/dhcp/ddns.key
+chmod 640 /etc/bind/ddns.key
+chmod 640 /etc/dhcp/ddns.key
+sudo nano /etc/bind/named.conf.local
+	include “/etc/bind/ddns.key”;
+	zone “micentro.edu”{
+		type master;
+		notify no;
+		file “/var/cache/bind/db.micentro.edu”;
+		allow-update { key DDNS_UPDATE; };
+	};
+	
+	zone “4.168.193.in-addr.arpa”{
+		type master;
+		notify no;
+		file “/etc/cache/bind/db.4.168.193”
+		allow-update { key DDNS_UPDATE”; };
+	};
+	
+mkdir /etc/bind/zonas
+cp /etc/bind/db.empy /etc/bind/zonas/db.micentro.edu
+cp /etc/bind/db.empy /etc/bind/zonas/db.4.168.193
+sudo nano /etc/bind/zonas/db.micentro.edu (y lo editamos)
+sudo nano /etc/bind/zonas/db.4.168.193 (y lo editamos)
+sudo named-checkzone micentro.edu /etc/bind/zonas/db.micentro.edu
+sudo named-checkzone 4.168.193.in-addr.arpa /etc/bind/zonas/db.4.168.193
+cd /var/cache/bind
+ln -s /etc/bind/zonas/db.micentro.edu
+ln -s /etc/bind/zonas/db.4.168.193
