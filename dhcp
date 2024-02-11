@@ -15,8 +15,8 @@ sudo apt-get install isc-dhpc-server
 #}
 
 # 3.- cargar fichero
-sudo dhcpd -t -cf /etc/dhcp/dhcpd.conf
+# sudo dhcpd -t -cf /etc/dhcp/dhcpd.conf
 
 # 4.- poner la tarjeta
-sudo nano /etc/default/isc-dhcp-server
+# sudo nano /etc/default/isc-dhcp-server
 # el nombre de tu dispositivo de red en ipv4
