@@ -1,7 +1,7 @@
-echo "  ethernets:" >> /etc/netplan/*
-echo "    ens19:" >> /etc/netplan/*
-echo "      dhcp4: true" >> /etc/netplan/*
-echo "    ens18:" >> /etc/netplan/*
-echo "      addresses: [193.168.3.220/24]">> /etc/netplan/*
-echo "      nameservers:" >> /etc/netplan/*
+echo "  ethernets:
+echo "    ens19:
+echo "      dhcp4: true
+echo "    ens18:
+echo "      addresses: [193.168.3.220/24]
+echo "      nameservers:
 echo "       addresses: [1.1.1.1, 8.8.8.8]" >> /etc/netplan/*
