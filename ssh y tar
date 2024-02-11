@@ -1,0 +1,22 @@
+sudo apt-get update; sudo apt-get install ssh -y
+ssh-keygen -t rsa (desde el cliente)
+ssh-copy-id -i ~/.ssh/id_rsa.pub usuario@192.168.4.220
+
+
+.tar (tar)
+Empaquetar
+tar cvf archivo.tar /archivo/mayo/*
+Desempaquetar
+tar xvf archivo.tar
+Ver el contenido (sin extraer)
+tar tvf archivo.tar
+
+
+.tar.gz - .tar.z - .tgz (tar con gzip)
+Empaquetar y comprimir
+tar czvf archivo.tar.gz /archivo/mayo/*
+Desempaquetar y descomprimir
+tar xzvf archivo.tar.gz
+Ver el contenido (sin extraer)
+tar tzvf archivo.tar.gz
+
