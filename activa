@@ -1,9 +1,11 @@
-nano /etc/sysctl.conf
+sudo apt-get update; sudo apt-get upgrade -y
 
-y tenemos que descomentar la siguiente linea:
-# Uncomment the next line to enable packet forwarding for IPv4
-net.ipv4.ip_forward=1
+mkdir /home/usuario/scritps
 
-sudo sysctl -p /etc/sysctl.conf
+touch enruta.sh
+echo "	#!/bin/bash" >> /home/usuario/scritps/enruta.sh
+echo "	echo “1” > /proc/sys/net/ipv4/ip_forward " >> /home/usuario/scritps/enruta.sh
+echo "	iptables -t nat -A POSTROUTING -s 193.168.4.0/24 -o ens18 -j MASQUERADE " >> /home/usuario/scritps/enruta.sh
+echo "	iptables -A FORWARD -j ACCEPT " >> /home/usuario/scritps/enruta.sh
 
-iptables -t nat -A POSTROUTING -o (interfaz en dhcp) -j MASQUERADE
+bash enruta.sh
